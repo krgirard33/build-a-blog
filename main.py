@@ -17,6 +17,8 @@
 import webapp2
 import cgi
 import re
+import os
+import jinja2
 
 template_dir = os.path.join(os.path.dirname(__file__), "templates")
 jinja_environment = jinja2.Environment(
@@ -50,8 +52,15 @@ class LoginHandler(Handler):
 
 class SingUpHandler(Handler):
     def get(self):
-        # items = self.request.get_all("food")
-        self.render("singup.html")
+        template = jinja_environment.get_template("signup.html")
+        self.response.out.write(template.render())
+
+    def post(self):
+        username = self.request.get("username")
+        password = self.request.get("password")
+        verify = self.request.get("verify")
+        email = self.request.get("email")
+
 
 class WelcomeHandler(Handler):
     def get(self):
