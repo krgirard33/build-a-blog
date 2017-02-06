@@ -27,18 +27,47 @@ USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
 PASSWORD_RE = re.compile(r"^.{3,20}$")
 EMAIL_RE = re.compile(r"^[\S]+@[\S]+\.[\S]+$")
 
+class Handler(webapp2.RequestHandler):
+    def write(self, *a, **kw):
+        self.response.out.write(*a, **kw)
+    
+    def render_str(self, template, **params):
+        t = jinja_env.get_template(template)
+        return t.render(params)
+    
+    def render(self, template, **kw):
+        self.write(self.render_str(template, **kw))
 
-class MainHandler(webapp2.RequestHandler):
+class MainHandler(Handler):
     def get(self):
-        self.response.write('She grabbed her book & bucket of crayons')
+        # items = self.request.get_all("food")
+        self.render("index.html")
 
-class FizzBuzzHandler(Handler):
-    def get(self)
-        n = self.request.get('n', 0)
-        n = n and int(n)
-        self.render("fizzbuzz.html", n = n)
+class LoginHandler(Handler):
+    def get(self):
+        # items = self.request.get_all("food")
+        self.render("login.html")
 
+class SingUpHandler(Handler):
+    def get(self):
+        # items = self.request.get_all("food")
+        self.render("singup.html")
+
+class WelcomeHandler(Handler):
+    def get(self):
+        # items = self.request.get_all("food")
+        self.render("welcome.html")
+
+
+class NewPostHandler(Handler):
+    def get(self):
+        # items = self.request.get_all("food")
+        self.render("newpost.html")
 
 app = webapp2.WSGIApplication([
-    ('/', MainHandler)
+    ('/', MainHandler,
+    "/login.html", LoginHandler,
+    "/singup.html", SignUpHandler,
+    "/welcome.html", WelcomeHandler,
+    "/newpost.html", NewPostHandler,)
 ], debug=True)
