@@ -20,8 +20,10 @@ import re
 import os
 import jinja2
 
+from google.appengine.ext import db
+
 template_dir = os.path.join(os.path.dirname(__file__), "templates")
-jinja_environment = jinja2.Environment(
+jinja_env = jinja2.Environment(
     loader=jinja2.FileSystemLoader(template_dir),
     autoescape=True)
 
@@ -40,12 +42,34 @@ class Handler(webapp2.RequestHandler):
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
 
+
+'''class NewPostHandler(db.Model):
+    title = db.StringProperty(required = True)
+    new_post = db.TextProperty(required = True)
+    created_on = db.DateTimeProperty(auto_now_add = True)
+
+
+class ViewPostHandler(webapp2.RequestHandler):
+
+    def get(self, id):
+        pass #relace this with some code to handle the request
+        # to get post number 6
+        # Once you have set up this new dynamic route, and the corresponding handler and get method, 
+        # you are ready to do a simple test. In the get method, simply print the value of the id 
+        # parameter to the response. No need to use a template, or even any HTML, just 
+        # self.response.write(). Then visit such a route in your browser (e.g. /blog/42). '''
+
 class MainHandler(Handler):
     def get(self):
+        #self.write("Word")
         # items = self.request.get_all("food")
         self.render("index.html")
+    
+    def post(self):
+        title = self.request.get("title")
+        
 
-class LoginHandler(Handler):
+'''class LoginHandler(Handler):
     def get(self):
         # items = self.request.get_all("food")
         self.render("login.html")
@@ -71,12 +95,11 @@ class WelcomeHandler(Handler):
 class NewPostHandler(Handler):
     def get(self):
         # items = self.request.get_all("food")
-        self.render("newpost.html")
+        self.render("newpost.html")'''
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler,
-    "/login.html", LoginHandler,
-    "/singup.html", SignUpHandler,
-    "/welcome.html", WelcomeHandler,
-    "/newpost.html", NewPostHandler,)
+    '''"/blog", LoginHandler,
+    "/newpost", NewPostHandler,
+    "/blog/<id:\d+>", VeiwPostHandler''')
 ], debug=True)
