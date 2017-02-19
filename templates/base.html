@@ -1,10 +1,74 @@
+<!DOCTYPE html>
 <html>
-  <head>
-    <meta content="text/html; charset=windows-1252" http-equiv="content-type">
-    <link href="https://fonts.googleapis.com/css?family=Bahiana%7CBlack+Ops+One%7COregano%7CRevalia%7CRoboto"
-      rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="/stylesheets/style.css">
-  </head>
-  <body> {% block content %} {% endblock %}
-  </body>
+
+<head>
+    <title>Build-a-Blog</title>
+    <style type="text/css">
+        body {
+            font-family: sans-serif;
+            width: 800px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+
+        .error {
+            color: red;
+        }
+
+        label {
+            display: block;
+            font-size: 20px;
+        }
+
+        input[type=text] {
+            width: 400px;
+            font-size: 20px;
+            padding: 2px;
+        }
+
+        textarea {
+            width: 400px;
+            height: 200px;
+            font-size: 17px;
+            font-family: monospace;
+        }
+
+        input[type=submit] {
+            font-size: 24px;
+        }
+
+        hr {
+            margin: 20px auto;
+        }
+
+        .art+.art {
+            margin-top: 20px;
+        }
+
+        .art-title {
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .art-body {
+            margin: 0;
+            font-size: 17px;
+        }
+
+        .menu {
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="menu">
+        <a href="/blog">Home</a></li> | <a href="/newpost">New Post</a>
+    </div>
+    <h1> Words go here </h1>
+
+    {% block content %} {% endblock %}
+
+</body>
+
 </html>

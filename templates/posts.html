@@ -1,0 +1,11 @@
+{% extends "base.html" %} {% block content %}
+
+<h3>5 Latest Post</h3>
+
+<hr> {% for blog in blogs %}
+<div class="blog">
+    <div class="blog-title"><a href="/blog/{{blog.key().id()}}">{{blog.title}}</a></div>
+    <pre class="blog-body">{{blog.blogtext}}</pre>
+    <hr>
+</div>
+{% endfor %} {% endblock %}

@@ -1,105 +1,106 @@
 #!/usr/bin/env python
-#
-# Copyright 2007 Google Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
 import webapp2
-import cgi
-import re
-import os
 import jinja2
-
+import os
 from google.appengine.ext import db
 
+#set up jinja
 template_dir = os.path.join(os.path.dirname(__file__), "templates")
-jinja_env = jinja2.Environment(
-    loader=jinja2.FileSystemLoader(template_dir),
-    autoescape=True)
-
-USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
-PASSWORD_RE = re.compile(r"^.{3,20}$")
-EMAIL_RE = re.compile(r"^[\S]+@[\S]+\.[\S]+$")
+jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir), autoescape=True)
 
 class Handler(webapp2.RequestHandler):
+    """ handles pulling up html pages """
     def write(self, *a, **kw):
         self.response.out.write(*a, **kw)
-    
+
     def render_str(self, template, **params):
         t = jinja_env.get_template(template)
         return t.render(params)
-    
+
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
 
+class BlogDB(db.Model):
+    """ database of what gets posted """
+    title = db.StringProperty(required=True)
+    blogtext = db.TextProperty(required=True)
+    created = db.DateTimeProperty(auto_now_add=True)
 
-'''class NewPostHandler(db.Model):
-    title = db.StringProperty(required = True)
-    new_post = db.TextProperty(required = True)
-    created_on = db.DateTimeProperty(auto_now_add = True)
+class MainPage(Handler):
+    """ handles the first page """
+    def render_posts(self, title="", blogtext="", error=""):
+        blogs = db.GqlQuery("SELECT * FROM BlogDB ORDER BY created DESC LIMIT 5")
+        self.render("posts.html", title=title, blogtext=blogtext, error=error, blogs=blogs)
 
-
-class ViewPostHandler(webapp2.RequestHandler):
-
-    def get(self, id):
-        pass #relace this with some code to handle the request
-        # to get post number 6
-        # Once you have set up this new dynamic route, and the corresponding handler and get method, 
-        # you are ready to do a simple test. In the get method, simply print the value of the id 
-        # parameter to the response. No need to use a template, or even any HTML, just 
-        # self.response.write(). Then visit such a route in your browser (e.g. /blog/42). '''
-
-class MainHandler(Handler):
     def get(self):
-        #self.write("Word")
-        # items = self.request.get_all("food")
-        self.render("index.html")
-    
+        self.render_posts()
+
+class NewPost(Handler):
+    """ handles the creation of new post """
+    def render_newpost(self, title="", blogtext="", error=""):
+        blogs = db.GqlQuery("SELECT * FROM BlogDB ORDER BY created DESC LIMIT 5")
+        self.render("newpost.html", title=title, blogtext=blogtext, error=error, blogs=blogs)
+
+    def get(self):
+        self.render_newpost()
+
     def post(self):
         title = self.request.get("title")
-        
+        blogtext = self.request.get("blogtext")
 
-'''class LoginHandler(Handler):
-    def get(self):
-        # items = self.request.get_all("food")
-        self.render("login.html")
-
-class SingUpHandler(Handler):
-    def get(self):
-        template = jinja_environment.get_template("signup.html")
-        self.response.out.write(template.render())
-
-    def post(self):
-        username = self.request.get("username")
-        password = self.request.get("password")
-        verify = self.request.get("verify")
-        email = self.request.get("email")
+        if title and blogtext:
+            b = BlogDB(title=title, blogtext=blogtext)
+            b.put()
+            self.redirect("/blog/%s" % b.key().id())
+        else:
+            error = "We need title and content to post this"
+            self.render_newpost(title, blogtext, error)
 
 
-class WelcomeHandler(Handler):
-    def get(self):
-        # items = self.request.get_all("food")
-        self.render("welcome.html")
+class SinglePost(Handler):
+    """ handles calls for a specific post """
+    def render_singlepost(self, title="", blogtext=""):
+
+        self.render("singlepost.html", title=title, blogtext=blogtext)
+
+    def get(self, id):
+        b = BlogDB.get_by_id(int(id))
+        if b:
+            self.render_singlepost(title=b.title, blogtext=b.blogtext)
+
+        else:
+            # TODO: Get it to say the ID number
+            error = "We looked high and low, but this doesn't  seem to exist"
+            self.response.out.write(error)
 
 
-class NewPostHandler(Handler):
-    def get(self):
-        # items = self.request.get_all("food")
-        self.render("newpost.html")'''
+"""
+This function should return a list with at most limit posts in descending order by time created,
+and it should start with the post in position offset. For example, if there are 8 posts, get_post(5, 5)
+should return posts 6 through 8, by creation time. get_posts(5, 0) should return the 5 most recent posts.
+
+Then refeactor the handler for your main page to call get_posts with the appropriate parameters. Add code
+that allows the user to provide a GET query parameter named page that represents that page that they
+would like to view. When the user requests /blog?page=1 they should see the 5 most recent posts
+(the same as when /blog is requested), when they request /blog?page=2 the next 5 posts should be displayed,
+and so on.
+"""
+# def get_posts(limit, offest):
+# TODO: query the database for posts, and return them
+    #posts.count(offset=offset, limit=page_size)
+    # if page =1 and post count > limit
+    # show next
+    # elif page > 1 & page count > 1 & post > limit*2
+    # then back & next
+    # elif page count > 1 & post < limit*2
+    # then just back
+    # if page count =1 & post > limit
+    # then next
+    # yeah, making this too convuluted...
 
 app = webapp2.WSGIApplication([
-    ('/', MainHandler,
-    '''"/blog", LoginHandler,
-    "/newpost", NewPostHandler,
-    "/blog/<id:\d+>", VeiwPostHandler''')
+    ('/', MainPage),
+    ('/blog', MainPage),
+    webapp2.Route('/blog/<id:\d+>', SinglePost),
+    ('/newpost', NewPost)
 ], debug=True)
